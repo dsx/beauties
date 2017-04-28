@@ -13,7 +13,7 @@ information.
 ## Help
 
 Koinonia server
-[index page](https://github.com/dsx/beauties/cmd/koinonia/static/index.txt).
+[index page](https://raw.githubusercontent.com/dsx/beauties/master/cmd/koinonia/static/index.txt)
 
 ```
 make help
