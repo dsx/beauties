@@ -1,0 +1,11 @@
+*~
+.#*
+cmd/koinonia/bindata.go
+cmd/koinonia/koinonia
+debian/*.debhelper.log
+debian/*debhelper
+debian/debhelper-build-stamp
+debian/files
+debian/koinonia-server.substvars
+debian/koinonia-server/*
+koinonia
