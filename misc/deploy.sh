@@ -74,7 +74,7 @@ fi
 # Create and handle temporary hosts file
 hosts_file="$(mktemp)"
 
-echo "[koinonia]" > "${hosts_file}"
+echo "[beauties]" > "${hosts_file}"
 
 # Iterate over remaining arguments
 for host; do

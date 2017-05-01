@@ -1,1 +1,4 @@
-koinonia usr/sbin
+beauties usr/sbin
+systemd/beauties-cleanup.service lib/systemd/system
+systemd/beauties-cleanup.timer lib/systemd/system
+systemd/beauties.service lib/systemd/system

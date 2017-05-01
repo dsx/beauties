@@ -7,9 +7,9 @@ help:
 	@echo ""
 	@echo "commands:"
 	@echo " all (default)	- build everything"
-	@echo "	install		- install koinonia binary to ${GOPATH}/bin"
+	@echo "	install		- install beauties binary to ${GOPATH}/bin"
 	@echo "	clean		- make package directory (${GOPATH}/src/github.com/dsx/beauties) as clean as possible"
-	@echo " veryclean	- clean and remove koinonia binary"
+	@echo " veryclean	- clean and remove beauties binary"
 	@echo "	deb		- build default debian package"
 	@echo "	deps		- install dependencies for development"
 
@@ -28,10 +28,10 @@ clean:
 
 veryclean: clean
 	@rm -f \
-	"${GOPATH}/bin/koinonia" \
-	"${GOPATH}/src/github.com/dsx/beauties/cmd/koinonia/bindata.go" \
-	"${GOPATH}/src/github.com/dsx/beauties/cmd/koinonia/koinonia" \
-	"${GOPATH}/src/github.com/dsx/beauties/koinonia"
+	"${GOPATH}/bin/beauties" \
+	"${GOPATH}/src/github.com/dsx/beauties/cmd/beauties/bindata.go" \
+	"${GOPATH}/src/github.com/dsx/beauties/cmd/beauties/beauties" \
+	"${GOPATH}/src/github.com/dsx/beauties/beauties"
 
 build:
 	go generate github.com/dsx/beauties/cmd/...
@@ -41,7 +41,7 @@ install:
 	go install github.com/dsx/beauties/cmd/...
 
 deb: veryclean build
-	@strip "${GOPATH}/src/github.com/dsx/beauties/koinonia"
+	@strip "${GOPATH}/src/github.com/dsx/beauties/beauties"
 	@misc/gen-deb-changelog-from-git.sh
 	@debuild -b
 

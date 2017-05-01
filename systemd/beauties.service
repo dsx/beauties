@@ -1,0 +1,16 @@
+[Unit]
+Description=Beauties daemon
+After=network.target
+ConditionPathExists=/var/cache/beauties
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/beauties
+Restart=always
+RestartSec=13
+User=www-data
+Group=www-data
+

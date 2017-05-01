@@ -1,0 +1,10 @@
+[Unit]
+Description=Beauties files cleanup
+
+[Timer]
+OnCalendar=*:0/30
+Persistent=true
+Unit=beauties-server-cleanup.service
+
+[Install]
+WantedBy=timers.target

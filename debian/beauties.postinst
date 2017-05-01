@@ -1,0 +1,11 @@
+#!/bin/sh
+
+/usr/bin/dpkg-statoverride --remove /var/cache/beauties >/dev/null 2>&1 || true
+/usr/bin/dpkg-statoverride --update --add www-data www-data  00750 /var/cache/beauties
+
+#DEBHELPER#
+
+if [ -d /run/systemd/system ]; then
+    deb-systemd-invoke enable beauties-cleanup.timer >/dev/null
+    deb-systemd-invoke start beauties-cleanup.timer >/dev/null
+fi
