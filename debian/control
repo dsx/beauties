@@ -1,0 +1,18 @@
+Source: beauties
+Section: devel
+Priority: extra
+Maintainer: Egor M. <dsx@droidnest.org>
+Uploaders: Egor M. <dsx@droidnest.org>
+Build-Depends: debhelper (>= 10), dh-golang
+Standards-Version: 3.9.8
+Homepage: https://github.com/dsx/beauties
+Vcs-Browser: https://anonscm.debian.org/cgit/pkg-go/packages/beauties.git
+Vcs-Git: https://anonscm.debian.org/git/pkg-go/packages/beauties.git
+
+Package: beauties
+Architecture: any
+Built-Using: ${misc:Built-Using}
+Depends: ${misc:Depends}
+Description: Essential personal Internet services
+ Essential personal Internet services like basic file sharing and
+ «what is my ip?».

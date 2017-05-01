@@ -8,4 +8,6 @@ debian/debhelper-build-stamp
 debian/files
 debian/koinonia-server.substvars
 debian/koinonia-server/*
+debina/changelog
 koinonia
+obj-x86_64-linux-gnu

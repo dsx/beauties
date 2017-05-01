@@ -5,14 +5,14 @@ const (
 	base    = int64(len(symbols))
 )
 
-// Encode encodes a number into our *base* representation
+// Encode encodes a symbol using symbol base
 // Taken from https://github.com/fs111/kurz.go/blob/master/src/codec.go
-func Encode(number int64) string {
+func Encode(number int64) (result string) {
 	rest := number % base
-	result := string(symbols[rest])
+	result = string(symbols[rest])
 	if number-rest != 0 {
-		newnumber := (number - rest) / base
-		result = Encode(newnumber) + result
+		n := (number - rest) / base
+		result = Encode(n) + result
 	}
-	return result
+	return
 }

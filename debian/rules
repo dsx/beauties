@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+export DH_GOPKG := github.com/dsx/beauties
+export DH_GOLANG_INSTALL_ALL := 1
+
+override_dh_auto_configure:
+	go generate github.com/dsx/beauties/cmd/...
+	dh_auto_configure
+
+override_dh_systemd_enable:
+	dh_systemd_enable --no-enable --name=koinonia-storage-cleanup
+	dh_systemd_enable
+
+%:
+	dh $@ --buildsystem=golang --with=golang
