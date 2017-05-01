@@ -15,6 +15,7 @@ trap "{ cleanup; }" EXIT SIGTERM
 getCommits() {
     prevtag="${1}"
     tag="${2}"
+    forceVer="${3:-}"
     local -a authors
     local ver="${tag}-1"
     local h
@@ -26,7 +27,12 @@ getCommits() {
 
         if [ "${tag}" == "HEAD" ]; then
             h=$(git rev-list --max-count=1 --abbrev-commit HEAD)
-            ver="${prevtag}~1.${h}"
+            if [ -z "${forceVer}" ]; then
+                ver="${prevtag}~1.${h}"
+            else
+                ver="${forceVer}~1.${h}"
+            fi
+
         fi
 
         echo "${pkgname} (${ver}) UNRELEASED; urgency=low" >> "${tmpfile}"
@@ -53,24 +59,34 @@ if [ ! -d "debian" ]; then
 fi
 
 tmpfile=$(mktemp)
-firstHash=$(git rev-list --max-parents=0 HEAD) # This should yeild the very first commit hash
+
+historyStart=($(git rev-list --max-parents=0 HEAD))
+if ((${#historyStart[@]}>1)); then
+    echo "»»» History starts with more than one commit. Using ${historyStart[-1]} as root, some changes may not get into debian/changes ."
+fi
+firstHash="${historyStart[-1]}"
+
 pkgname=$(grep '^Package: ' debian/control | sed 's/^Package: //')
 tags=($(git tag | sort -r -V))
 
-echo "»»» Gathering untagged commits"
-tag=${tags[0]}
-untagged=$(git rev-list --count "${tag}"..HEAD)
-if ((untagged>0)); then
-    getCommits "${tag}" HEAD
+if ((${#tags[@]}>0)); then
+    tag=${tags[0]}
+    untagged=$(git rev-list --count "${tag}"..HEAD)
+
+    if ((untagged>0)); then
+        echo "»»» Gathering untagged commits"
+        getCommits "${tag}" HEAD
+    fi
+
+    for ((i=1; i<${#tags[@]}; i++)); do
+        tag="${tags[${i}]}"
+        nexttag="${tags[$((i-1))]}"
+        getCommits "${tag}" "${nexttag}"
+    done
+
+    getCommits "${firstHash}" "${tags[-1]}"
+else
+    getCommits "${firstHash}" HEAD "0.0.0"
 fi
-
-
-for ((i=1; i<${#tags[@]}; i++)); do
-    tag="${tags[${i}]}"
-    nexttag="${tags[$((i-1))]}"
-    getCommits "${tag}" "${nexttag}"
-done
-
-getCommits "${firstHash}" "${tags[-1]}"
 
 mv "${tmpfile}" debian/changelog
