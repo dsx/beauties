@@ -4,19 +4,25 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"syscall"
 
 	"github.com/dsx/beauties"
 )
 
-func makeURL(r *http.Request, token, filename string) string {
-	scheme := "http"
+func makeURL(r *http.Request, token, filename string) (string, error) {
 	domain := getDomain(r)
-	if r.TLS != nil || r.Header.Get("X-HTTPS") != "" {
-		scheme = "https"
+	_uri := fmt.Sprintf("http://%s/%s/%s", domain, token, filename)
+	u, err := url.Parse(_uri)
+	if err != nil {
+		return "", err
 	}
 
-	return fmt.Sprintf("%s://%s/%s/%s", scheme, domain, token, filename)
+	if r.TLS != nil || r.Header.Get("X-HTTPS") != "" {
+		u.Scheme = "https"
+	}
+
+	return u.String(), nil
 }
 
 func checkFreeSpace() bool {

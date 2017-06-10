@@ -132,7 +132,12 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			url := makeURL(r, token, filename)
+			url, err := makeURL(r, token, filename)
+			if err != nil {
+				log.Printf("Can't make url for uploaded file %s: %s", filename, err.Error())
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
 			log.Printf("Upload complete: %s (%d)", url, contentLength)
 			io.WriteString(w, url+"\n")
 		}
@@ -164,7 +169,12 @@ func putHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := makeURL(r, token, filename)
+	url, err := makeURL(r, token, filename)
+	if err != nil {
+		log.Printf("Can't make url for uploaded file %s: %s", filename, err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 	log.Printf("Upload complete: %s (%d)", url, contentLength)
 	w.Header().Set("Content-Type", "text/plain")
 	io.WriteString(w, url+"\n")
