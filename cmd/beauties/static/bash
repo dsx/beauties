@@ -18,3 +18,14 @@ share() {
     echo "${url}"
 }
 
+rshare() {
+    if ((${#} == 0)); then
+        echo "Usage:"
+        echo "	rshare /path/to/file"
+        echo "	This will REMOVE /path/to/file"
+        return 1
+    fi
+
+    share "${1}"
+    rm -f "${1}"
+}
