@@ -281,12 +281,15 @@ func fileManipulationHandler(op string, w http.ResponseWriter, r *http.Request) 
 
 	switch op {
 	case "Get":
+		w.Header().Set("Content-Type", contentType)
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", contentLength))
+		w.Header().Set("Connection", "close")
+
 		if _, err = io.Copy(w, reader); err != nil {
 			log.Printf("Can't read file %s/%s from storage %s: %s", token, filename, storage, err.Error())
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
-		fallthrough
 
 	case "Head":
 		w.Header().Set("Content-Type", contentType)
