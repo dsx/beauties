@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -58,7 +59,7 @@ func init() {
 	flag.StringVar(&config.Storage, "s", config.Storage, "storage directory")
 
 	// Temp
-	flag.StringVar(&config.Temp, "t", os.TempDir(), "temporary directory")
+	flag.StringVar(&config.Temp, "t", filepath.Join(config.Storage, "tmp"), "temporary directory")
 
 	// DomainName
 	config.DomainName = os.Getenv(fmt.Sprintf("%s_DOMAIN", strings.ToUpper(BinaryName)))
@@ -91,6 +92,12 @@ func main() {
 		defer f.Close()
 
 		log.SetOutput(f)
+	}
+
+	if config.Temp != "" {
+		os.Setenv("TMPDIR", config.Temp)
+	} else {
+		os.Setenv("TMPDIR", os.TempDir())
 	}
 
 	storage, err = beauties.NewLocalStorage(config.Storage)
