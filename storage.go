@@ -14,7 +14,7 @@ type Storage interface {
 	String() string
 	Get(token, filename string) (reader io.ReadCloser, contentType string, contentLength int64, err error)
 	Head(token, filename string) (contentType string, contentLength int64, err error)
-	Put(token, filename string, reader io.Reader, contentType string, contentLength int64) error
+	Put(token, filename string, reader io.Reader, contentLength int64) error
 	Delete(token, filename string) (err error)
 	IsNotExist(err error) bool
 }
@@ -103,7 +103,7 @@ func (s *LocalStorage) IsNotExist(err error) bool {
 }
 
 // Put puts file in a storage
-func (s *LocalStorage) Put(token string, filename string, reader io.Reader, contentType string, contentLength int64) error {
+func (s *LocalStorage) Put(token string, filename string, reader io.Reader, contentLength int64) error {
 	var f io.WriteCloser
 	var err error
 
