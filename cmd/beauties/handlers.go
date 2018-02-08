@@ -31,7 +31,12 @@ func registerHandlers(r *mux.Router) {
 
 func logRequest(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+		remoteAddr := r.Header.Get("X-Forwarded-For")
+		if remoteAddr == "" {
+			remoteAddr = r.RemoteAddr
+		}
+
+		log.Printf("%s %s %s", remoteAddr, r.Method, r.URL)
 		handler.ServeHTTP(w, r)
 	})
 }
@@ -125,7 +130,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			token, contentLength, err := genericUploadHandler(fh, filename, contentType)
+			token, contentLength, err := genericUploadHandler(fh, filename)
 			if err != nil {
 				log.Printf("File upload failed for file %s: %s", filename, err.Error())
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -162,7 +167,7 @@ func putHandler(w http.ResponseWriter, r *http.Request) {
 
 	fh := r.Body
 
-	token, contentLength, err := genericUploadHandler(fh, filename, contentType)
+	token, contentLength, err := genericUploadHandler(fh, filename)
 	if err != nil {
 		log.Printf("File upload failed for file %s: %s", filename, err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -192,13 +197,9 @@ func headHandler(w http.ResponseWriter, r *http.Request) {
 	fileManipulationHandler("Head", w, r)
 }
 
-func genericUploadHandler(fh io.Reader, fn, contentType string) (token string, contentLength int64, err error) {
+func genericUploadHandler(fh io.Reader, fn string) (token string, contentLength int64, err error) {
 	filename := filepath.Base(fn)
 	token = getToken()
-
-	if contentType == "" {
-		contentType = mime.TypeByExtension(filename)
-	}
 
 	var buff bytes.Buffer
 
@@ -236,7 +237,7 @@ func genericUploadHandler(fh io.Reader, fn, contentType string) (token string, c
 		reader = bytes.NewReader(buff.Bytes())
 	}
 
-	if err = storage.Put(token, filename, reader, contentType, contentLength); err != nil {
+	if err = storage.Put(token, filename, reader, contentLength); err != nil {
 		log.Printf("Can't write to storage %s: %s", storage, err.Error())
 	}
 
