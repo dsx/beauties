@@ -1,15 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -201,43 +198,7 @@ func genericUploadHandler(fh io.Reader, fn string) (token string, contentLength 
 	filename := filepath.Base(fn)
 	token = getToken()
 
-	var buff bytes.Buffer
-
-	contentLength, err = io.CopyN(&buff, fh, RequestMaximumMemory+1)
-	if err != nil && err != io.EOF {
-		log.Printf("Can't write to buffer: %s", err.Error())
-		return
-	}
-
-	var reader io.Reader
-	if contentLength > RequestMaximumMemory {
-		var file *os.File
-		file, err = ioutil.TempFile(config.Temp, fmt.Sprintf("%s-", BinaryName))
-
-		if err != nil {
-			log.Printf("Can't create temp file: %s", err.Error())
-			return
-		}
-		defer file.Close()
-
-		contentLength, err = io.Copy(file, io.MultiReader(&buff, fh))
-		if err != nil {
-			log.Printf("Can't write to temp file %s: %s", file.Name(), err.Error())
-			os.Remove(file.Name())
-			return
-		}
-
-		reader, err = os.Open(file.Name())
-		if err != nil {
-			log.Printf("Can't open temp file %s for reading: %s", file.Name(), err.Error())
-			os.Remove(file.Name())
-			return
-		}
-	} else {
-		reader = bytes.NewReader(buff.Bytes())
-	}
-
-	if err = storage.Put(token, filename, reader, contentLength); err != nil {
+	if err = storage.Put(token, filename, fh, contentLength); err != nil {
 		log.Printf("Can't write to storage %s: %s", storage, err.Error())
 	}
 
