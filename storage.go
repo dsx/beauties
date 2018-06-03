@@ -146,6 +146,10 @@ func (s *LocalStorage) getContentType(path string) (ct string) {
 
 	ct = http.DetectContentType(buffer)
 
+	if ct == "application/octet-stream" {
+		ct = ""
+	}
+
 	return
 
 }
