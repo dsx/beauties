@@ -4,7 +4,7 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"io"
-	"mime"
+	"net/http"
 	"os"
 	"path/filepath"
 )
@@ -12,11 +12,18 @@ import (
 // Storage is a Storage interface
 type Storage interface {
 	String() string
-	Get(token, filename string) (reader io.ReadCloser, contentType string, contentLength int64, err error)
+	Get(token, filename string) (reader File, contentType string, contentLength int64, err error)
 	Head(token, filename string) (contentType string, contentLength int64, err error)
 	Put(token, filename string, reader io.Reader, contentLength int64) error
 	Delete(token, filename string) (err error)
 	IsNotExist(err error) bool
+}
+
+// File is a File interface combining io.Reader, io.Seeker and io.Closer
+type File interface {
+	io.Reader
+	io.Seeker
+	io.Closer
 }
 
 // LocalStorage is an implementation of a Storage interface using
@@ -63,14 +70,13 @@ func (s *LocalStorage) Head(token string, filename string) (contentType string, 
 	}
 
 	contentLength = int64(fi.Size())
-
-	contentType = mime.TypeByExtension(filepath.Ext(filename))
+	contentType = s.getContentType(path)
 
 	return
 }
 
 // Get retrieves file from a storage
-func (s *LocalStorage) Get(token string, filename string) (reader io.ReadCloser, contentType string, contentLength int64, err error) {
+func (s *LocalStorage) Get(token string, filename string) (reader File, contentType string, contentLength int64, err error) {
 	path := s.getPath(token, filename)
 
 	// content type , content length
@@ -84,8 +90,7 @@ func (s *LocalStorage) Get(token string, filename string) (reader io.ReadCloser,
 	}
 
 	contentLength = int64(fi.Size())
-
-	contentType = mime.TypeByExtension(filepath.Ext(filename))
+	contentType = s.getContentType(path)
 
 	return
 }
@@ -121,4 +126,26 @@ func (s *LocalStorage) Put(token string, filename string, reader io.Reader, cont
 	}
 
 	return nil
+}
+
+func (s *LocalStorage) getContentType(path string) (ct string) {
+	var reader File
+	var err error
+
+	reader, err = os.Open(path)
+	if reader, err = os.Open(path); err != nil {
+		return
+	}
+
+	buffer := make([]byte, 512)
+	if _, err = reader.Read(buffer); err != nil {
+		return
+	}
+
+	reader.Close()
+
+	ct = http.DetectContentType(buffer)
+
+	return
+
 }

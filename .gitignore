@@ -7,7 +7,8 @@ debian/*.debhelper.log
 debian/*debhelper
 debian/beauties.substvars
 debian/beauties/*
+debian/changelog
 debian/debhelper-build-stamp
 debian/files
-debian/changelog
 obj-x86_64-linux-gnu
+tmp/**

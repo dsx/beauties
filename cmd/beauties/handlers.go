@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dsx/beauties"
 	"github.com/gorilla/mux"
 )
 
@@ -213,7 +214,7 @@ func fileManipulationHandler(op string, w http.ResponseWriter, r *http.Request) 
 		contentLength int64
 		contentType   string
 		err           error
-		reader        io.ReadCloser
+		reader        beauties.File
 	)
 
 	switch op {
