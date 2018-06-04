@@ -130,6 +130,10 @@ func (s *LocalStorage) Put(token string, filename string, reader io.Reader, cont
 }
 
 func (s *LocalStorage) getContentType(path string) (ct string) {
+	if filepath.Ext(path) == "" {
+		return ""
+	}
+
 	ct = mime.TypeByExtension(filepath.Ext(path))
 	if ct != "" {
 		return
@@ -152,10 +156,5 @@ func (s *LocalStorage) getContentType(path string) (ct string) {
 
 	ct = http.DetectContentType(buffer)
 
-	if ct == "application/octet-stream" {
-		ct = ""
-	}
-
 	return
-
 }
