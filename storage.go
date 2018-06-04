@@ -4,6 +4,7 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -129,6 +130,11 @@ func (s *LocalStorage) Put(token string, filename string, reader io.Reader, cont
 }
 
 func (s *LocalStorage) getContentType(path string) (ct string) {
+	ct = mime.TypeByExtension(filepath.Ext(path))
+	if ct != "" {
+		return
+	}
+
 	var reader File
 	var err error
 
