@@ -71,7 +71,7 @@ func (s *LocalStorage) Head(token string, filename string) (contentType string, 
 	}
 
 	contentLength = int64(fi.Size())
-	contentType = s.getContentType(path)
+	contentType = s.getContentType(token, filename)
 
 	return
 }
@@ -91,7 +91,7 @@ func (s *LocalStorage) Get(token string, filename string) (reader File, contentT
 	}
 
 	contentLength = int64(fi.Size())
-	contentType = s.getContentType(path)
+	contentType = s.getContentType(token, filename)
 
 	return
 }
@@ -129,18 +129,19 @@ func (s *LocalStorage) Put(token string, filename string, reader io.Reader, cont
 	return nil
 }
 
-func (s *LocalStorage) getContentType(path string) (ct string) {
-	if filepath.Ext(path) == "" {
-		return ""
+func (s *LocalStorage) getContentType(token, filename string) (ct string) {
+	if filepath.Ext(filename) == "" {
+		return
 	}
 
-	ct = mime.TypeByExtension(filepath.Ext(path))
+	ct = mime.TypeByExtension(filepath.Ext(filename))
 	if ct != "" {
 		return
 	}
 
 	var reader File
 	var err error
+	path := s.getPath(token, filename)
 
 	reader, err = os.Open(path)
 	if reader, err = os.Open(path); err != nil {
