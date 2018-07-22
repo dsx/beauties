@@ -13,7 +13,7 @@
 			"importpath": "github.com/gorilla/mux",
 			"repository": "https://github.com/gorilla/mux",
 			"vcs": "git",
-			"revision": "ac112f7d75a0714af1bd86ab17749b31f7809640",
+			"revision": "cb4698366aa625048f3b815af6a0dea8aef9280a",
 			"branch": "master",
 			"notests": true
 		}
