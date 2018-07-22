@@ -1,31 +1,25 @@
 share() {
-    if ((${#} == 0)); then
+    if (( ${#} != 1 )); then
         echo "Usage:"
-        echo "	share /path/to/file"
+        echo "  share /path/to/file"
         echo "	cat /path/to/file | share filename"
         return 1
     fi
 
-    local url
-
     if tty -s; then
-        basefile=$(basename "${1}")
-        url=$(curl --progress-bar --upload-file "${1}" "https://tbrnk.quebec/${basefile:-}")
+        curl --progress-bar --upload-file "${1}" "https://tbrnk.quebec/${1##*/}"
     else
-        url=$(curl --progress-bar --upload-file "-" "https://tbrnk.quebec/${1}")
+        curl --progress-bar --upload-file "-" "https://tbrnk.quebec/${1}"
     fi
-
-    echo "${url}"
 }
 
 rshare() {
-    if ((${#} == 0)); then
+    if (( ${#} != 1 )); then
         echo "Usage:"
         echo "	rshare /path/to/file"
         echo "	This will REMOVE /path/to/file"
         return 1
     fi
 
-    share "${1}"
-    rm -f "${1}"
+    share "${1}" && rm "${1}"
 }
