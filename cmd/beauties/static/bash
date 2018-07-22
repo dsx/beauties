@@ -22,14 +22,14 @@ share() {
                 echo "%ERROR: ${1} is empty!" >&2
                 return 1
             fi
-            local basefile=$(basename $(readlink -m ${1}))
+            local basefile=$(basename $(readlink -m "${1}"))
 
             if [ -d "${1}" ]; then
                 local tfile=$(mktemp /tmp/foo.XXXXXXXXX)
-                echo "Copressing directory ${1}"  >&2
+                echo "Compressing directory ${1}"  >&2
                 tar --checkpoint=.100 --seek -zhcPf "$tfile" "${1}" >&2
                 url=$(curl --progress-bar --upload-file "$tfile" "https://tbrnk.quebec/${basefile:-}.tar.gz")
-                /bin/rm -f $tfile  >&2
+                /bin/rm -f $tfile
             elif [ -f "${1}" ]; then
                 url=$(curl --progress-bar --upload-file "${1}" "https://tbrnk.quebec/${basefile:-}")
             fi
