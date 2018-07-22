@@ -1,21 +1,47 @@
 share() {
-    if ((${#} == 0)); then
-        echo "Usage:"
-        echo "	share /path/to/file"
-        echo "	cat /path/to/file | share filename"
+    if [ $# -ne 1 ]; then
+        echo "Usage:"  >&2
+        echo "	share /path/to/file"  >&2
+        echo "	share /path/to/dir"  >&2
+        echo "	cat /path/to/file | share filename"  >&2
         return 1
-    fi
-
-    local url
-
-    if tty -s; then
-        basefile=$(basename "${1}")
-        url=$(curl --progress-bar --upload-file "${1}" "https://tbrnk.quebec/${basefile:-}")
     else
-        url=$(curl --progress-bar --upload-file "-" "https://tbrnk.quebec/${1}")
+
+        local url
+
+        if tty -s; then
+
+
+            if [ ! \( -e "${1}" \) ]; then
+                echo "%ERROR: ${1} does not exist!" >&2
+                return 1
+            elif [ ! \( -r "${1}" \) ]; then
+                echo "%ERROR: ${1} is not readable!" >&2
+                return 1
+            elif [ ! \( -s "${1}" \) ]; then
+                echo "%ERROR: ${1} is empty!" >&2
+                return 1
+            fi
+            local basefile=$(basename $(readlink -m ${1}))
+
+            if [ -d "${1}" ]; then
+                local tfile=$(mktemp /tmp/foo.XXXXXXXXX)
+                echo "Copressing directory ${1}"  >&2
+                tar --checkpoint=.100 --seek -zhcPf "$tfile" "${1}" >&2
+                url=$(curl --progress-bar --upload-file "$tfile" "https://tbrnk.quebec/${basefile:-}.tar.gz")
+                /bin/rm -f $tfile  >&2
+            elif [ -f "${1}" ]; then
+                url=$(curl --progress-bar --upload-file "${1}" "https://tbrnk.quebec/${basefile:-}")
+            fi
+
+        else
+            url=$(curl --progress-bar --upload-file "-" "https://tbrnk.quebec/${1}")
+        fi
+
+        echo "${url}"
+
     fi
 
-    echo "${url}"
 }
 
 rshare() {
