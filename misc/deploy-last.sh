@@ -60,7 +60,7 @@ if (( ${#} < 1 )); then
 fi
 
 # Find latest tag
-tag=$(git tag | tail -n1)
+tag=$(git tag | sort -V | tail -n1)
 if [ -z "${tag}" ]; then
     echo "Can't find latest tag!"
     exit 2
