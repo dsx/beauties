@@ -24,10 +24,13 @@ import (
 // BinaryName defines name of the binary for help message, default
 // storage dir name, prefix for temporary files, prefix for some log
 // messages and environment variable (converted to uppercase)
-var BinaryName = "beauties"
+const BinaryName = "beauties"
 
 // RequestMaximumMemory maximum size of request to be processed in memory
-var RequestMaximumMemory int64 = 1 * 1024 * 1024
+const RequestMaximumMemory int64 = 1 * 1024 * 1024
+
+// DictionaryFile is a path to equivalend of /usr/share/dict/american-english-huge in Debian (package wamerican-huge)
+const DictionaryFile = "/usr/share/dict/american-english-huge"
 
 var config struct {
 	Bind       string
@@ -39,6 +42,7 @@ var config struct {
 }
 
 var storage beauties.Storage
+var wordIndex []int64
 
 func init() {
 	// Bind
@@ -125,7 +129,5 @@ func main() {
 	signal.Notify(term, os.Interrupt)
 	signal.Notify(term, syscall.SIGTERM)
 
-	<-term
-
-	log.Printf("%s server stopped.", BinaryName)
+	log.Printf("%s server stopped: %s.", BinaryName, <-term)
 }

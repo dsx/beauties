@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"html/template"
 	"io"
 	"log"
+	"math/rand"
 	"mime"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -21,6 +24,7 @@ func registerHandlers(r *mux.Router) {
 	r.HandleFunc("/f", formHandler).Methods("GET")
 	r.HandleFunc("/gpg.asc", gpgHandler).Methods("GET")
 	r.HandleFunc("/ip", ipHandler).Methods("GET")
+	r.HandleFunc("/rword", rwordHandler).Methods("GET")
 	r.HandleFunc("/{filename}", putHandler).Methods("PUT")
 	r.HandleFunc("/{token}/{filename}", deleteHandler).Methods("DELETE")
 	r.HandleFunc("/{token}/{filename}", getHandler).Methods("GET")
@@ -262,4 +266,56 @@ func fileManipulationHandler(op string, w http.ResponseWriter, r *http.Request) 
 	case "Delete":
 		http.Error(w, http.StatusText(http.StatusNoContent), http.StatusNoContent)
 	}
+}
+
+func rwordHandler(w http.ResponseWriter, r *http.Request) {
+	fd, err := os.Open(DictionaryFile)
+	if err != nil {
+		log.Printf("Can't open dictionary file %s for reading: %s", DictionaryFile, err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	defer fd.Close()
+	rd := bufio.NewReader(fd)
+
+	if len(wordIndex) == 0 {
+	Loop:
+		for {
+			b, err := rd.ReadBytes('\n')
+			switch err {
+			case nil:
+			case io.EOF:
+				break Loop
+			default:
+				log.Printf("Can't read from file %s: %s", DictionaryFile, err.Error())
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+
+			word := strings.TrimSpace(string(b))
+			if len(string(word)) < 2 || string(word) != strings.TrimSuffix(string(word), "'s") {
+				continue
+			}
+
+			pos, err := fd.Seek(0, 1)
+			if err != nil {
+				log.Printf("Can't determine position in file %s: %s", DictionaryFile, err.Error())
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+
+			pos = pos - int64(rd.Buffered()) - int64(len(b))
+			wordIndex = append(wordIndex, pos)
+		}
+	}
+
+	idx := rand.Intn(len(wordIndex) - 1)
+
+	fd.Seek(wordIndex[idx], 0)
+	rd.Reset(fd)
+	word, _ := rd.ReadBytes('\n')
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write(word)
 }
