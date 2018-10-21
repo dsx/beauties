@@ -117,8 +117,8 @@ func main() {
 	s := &http.Server{
 		Addr:         config.Bind,
 		Handler:      logRequest(r),
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 1 * time.Second,
+		ReadTimeout:  60 * time.Minute,
+		WriteTimeout: 60 * time.Minute,
 	}
 
 	go func() {
