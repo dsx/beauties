@@ -46,6 +46,5 @@ deb: veryclean build
 	@debuild -b
 
 deps:
-	gvt update -all
 	go get github.com/rogpeppe/godef github.com/FiloSottile/gvt github.com/jteeuwen/go-bindata
 	go install github.com/rogpeppe/godef github.com/FiloSottile/gvt github.com/jteeuwen/go-bindata
