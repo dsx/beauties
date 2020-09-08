@@ -7,9 +7,9 @@ share() {
     fi
 
     if tty -s; then
-        curl --progress-bar --upload-file "${1}" "https://tbrnk.quebec/${1##*/}"
+        curl --progress-bar --upload-file "${1}" "https://{{.domain}}/${1##*/}"
     else
-        curl --progress-bar --upload-file "-" "https://tbrnk.quebec/${1}"
+        curl --progress-bar --upload-file "-" "https://{{.domain}}/${1}"
     fi
 }
 

@@ -5,6 +5,6 @@ Download and decrypt: curl -s https://{{.domain}}/<TOKEN>/filename | gpg -o -
 Delete shared file: curl -X DELETE https://{{.domain}}/<TOKEN>/filename
 HTML form: https://{{.domain}}/f
 Your IP: https://{{.domain}}/ip
-Random word from Debian's wamerican-huge: https://{{.domain}}/rword
 My public GPG key: curl -s https://{{.domain}}/gpg.asc
 Function for ~/.bashrc: curl -s https://{{.domain}}/bash
+Function for ~/.config/fish/functions: curl -s https://{{.domain}}/fish

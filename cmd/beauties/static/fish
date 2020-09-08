@@ -1,0 +1,29 @@
+function share
+        if not set -q argv[1]
+                echo "usage: "
+                echo "  share foo"
+                echo "  foo | share bar"
+                return 1
+        end
+        set -l filename (basename $argv[1])
+        if isatty stdin
+                curl --progress-bar --upload-file "$argv[1]" "https://{{.domain}}/$filename"
+        else
+                curl --progress-bar --upload-file "-" "https://{{.domain}}/$filename"
+        end
+end
+
+function rshare
+        share "$argv[1]" && rm "$argv[1]"
+end
+
+function rmshare
+        if not set -q argv[1] && not set -q argv[2]
+                echo "usage: "
+                echo "  rmshare token filename"
+                return 1
+        end
+
+        curl -X DELETE "https://{{.domain}}/$argv[1]/$argv[2]"
+end
+

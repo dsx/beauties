@@ -21,6 +21,7 @@ func registerHandlers(r *mux.Router) {
 	r.HandleFunc("/", postHandler).Methods("POST")
 	r.HandleFunc("/", viewHandler).Methods("GET")
 	r.HandleFunc("/bash", bashHandler).Methods("GET")
+	r.HandleFunc("/fish", fishHandler).Methods("GET")
 	r.HandleFunc("/f", formHandler).Methods("GET")
 	r.HandleFunc("/gpg.asc", gpgHandler).Methods("GET")
 	r.HandleFunc("/ip", ipHandler).Methods("GET")
@@ -58,6 +59,22 @@ func staticAssetHandler(w http.ResponseWriter, asset string) {
 		return
 	}
 }
+
+func templatedStaticAssetHandler(filepath string, name string, w http.ResponseWriter, r *http.Request) {
+	asset := filepath
+	domain := getDomain(r)
+	data, err := Asset(asset)
+	if err != nil {
+		log.Printf("Can't retrieve asset %s: %s", asset, err.Error())
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	tmpl, err := template.New(name).Parse(string(data))
+	w.Header().Set("Content-Type", "text/plain")
+	tmpl.Execute(w, map[string]string{"domain": domain})
+}
+
+
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	asset := "static/index.txt"
@@ -97,9 +114,13 @@ func gpgHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func bashHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	staticAssetHandler(w, "static/bash")
+        templatedStaticAssetHandler("static/bash", "bash", w, r)
 }
+
+func fishHandler(w http.ResponseWriter, r *http.Request) {
+        templatedStaticAssetHandler("static/fish", "fish", w, r)
+}
+
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
 	if !checkFreeSpace() {
@@ -266,56 +287,4 @@ func fileManipulationHandler(op string, w http.ResponseWriter, r *http.Request) 
 	case "Delete":
 		http.Error(w, http.StatusText(http.StatusNoContent), http.StatusNoContent)
 	}
-}
-
-func rwordHandler(w http.ResponseWriter, r *http.Request) {
-	fd, err := os.Open(DictionaryFile)
-	if err != nil {
-		log.Printf("Can't open dictionary file %s for reading: %s", DictionaryFile, err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	defer fd.Close()
-	rd := bufio.NewReader(fd)
-
-	if len(wordIndex) == 0 {
-	Loop:
-		for {
-			b, err := rd.ReadBytes('\n')
-			switch err {
-			case nil:
-			case io.EOF:
-				break Loop
-			default:
-				log.Printf("Can't read from file %s: %s", DictionaryFile, err.Error())
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
-
-			word := strings.TrimSpace(string(b))
-			if len(string(word)) < 2 || string(word) != strings.TrimSuffix(string(word), "'s") {
-				continue
-			}
-
-			pos, err := fd.Seek(0, 1)
-			if err != nil {
-				log.Printf("Can't determine position in file %s: %s", DictionaryFile, err.Error())
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
-
-			pos = pos - int64(rd.Buffered()) - int64(len(b))
-			wordIndex = append(wordIndex, pos)
-		}
-	}
-
-	idx := rand.Intn(len(wordIndex) - 1)
-
-	fd.Seek(wordIndex[idx], 0)
-	rd.Reset(fd)
-	word, _ := rd.ReadBytes('\n')
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write(word)
 }
